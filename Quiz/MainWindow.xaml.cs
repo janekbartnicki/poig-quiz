@@ -1,5 +1,4 @@
-﻿using Quiz.View;
-using Quiz.ViewModel;
+﻿using System;
 using System.Windows;
 
 namespace Quiz
@@ -9,15 +8,30 @@ namespace Quiz
         public MainWindow()
         {
             InitializeComponent();
+        }
 
-            // Utwórz instancję modelu widoku
-            var quizGeneratorViewModel = new QuizGeneratorViewModel();
+        // Przejście do ekranu informacji
+        private void InfoButton_Click(object sender, RoutedEventArgs e)
+        {
+            MainMenuGrid.Visibility = Visibility.Collapsed;
+            InfoGrid.Visibility = Visibility.Visible;
+        }
 
-            // Ustaw model widoku jako DataContext
-            this.DataContext = new MainViewModel
+        // Powrót do menu głównego
+        private void BackToMainButton_Click(object sender, RoutedEventArgs e)
+        {
+            InfoGrid.Visibility = Visibility.Collapsed;
+            MainMenuGrid.Visibility = Visibility.Visible;
+        }
+
+        // Wyjście z aplikacji
+        private void ExitButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("Czy na pewno chcesz zamknąć aplikację?", "Potwierdzenie",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
-                CurrentViewModel = quizGeneratorViewModel
-            };
+                Application.Current.Shutdown();
+            }
         }
     }
 }
