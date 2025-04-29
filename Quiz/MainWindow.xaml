@@ -15,6 +15,7 @@
         
     </Window.Resources>
     <Grid>
-
+        <TextBlock Text="Witaj w quizie!" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"/>
+        <Button Content="Dodaj pytanie" Width="120" Height="30" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,240,0,0"/>
     </Grid>
 </Window>
