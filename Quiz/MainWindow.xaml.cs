@@ -1,23 +1,23 @@
-﻿using System.Text;
+﻿using Quiz.View;
+using Quiz.ViewModel;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace Quiz;
-
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
-public partial class MainWindow : Window
+namespace Quiz
 {
-    public MainWindow()
+    public partial class MainWindow : Window
     {
-        InitializeComponent();
+        public MainWindow()
+        {
+            InitializeComponent();
+
+            // Utwórz instancję modelu widoku
+            var quizGeneratorViewModel = new QuizGeneratorViewModel();
+
+            // Ustaw model widoku jako DataContext
+            this.DataContext = new MainViewModel
+            {
+                CurrentViewModel = quizGeneratorViewModel
+            };
+        }
     }
 }
