@@ -12,7 +12,6 @@
         <DataTemplate DataType="{x:Type vm:QuizGeneratorViewModel}">
             <vw:QuizGeneratorView />
         </DataTemplate>
-        
     </Window.Resources>
     <Grid>
         <TextBlock Text="Witaj w quizie!" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"/>
