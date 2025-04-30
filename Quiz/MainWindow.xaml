@@ -4,9 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Quiz"
+        xmlns:viewmodels="clr-namespace:Quiz.ViewModels"
+        xmlns:views="clr-namespace:Quiz.Views" 
+        d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+        Title="Quiz" Height="450" Width="800">
+    <!-- Btw I'm not sure about d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"-->
+    <ContentControl Content="{Binding CurrentViewModel}">
+        <ContentControl.Resources>
+            <DataTemplate DataType="{x:Type viewmodels:HomeViewModel}">
+                <views:HomeView/>
+            </DataTemplate>
+        </ContentControl.Resources>
+    </ContentControl>
 </Window>
