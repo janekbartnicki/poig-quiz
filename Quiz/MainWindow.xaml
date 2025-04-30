@@ -15,6 +15,12 @@
             <DataTemplate DataType="{x:Type viewmodels:HomeViewModel}">
                 <views:HomeView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type viewmodels:QuizViewModel}">
+                <views:QuizView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewmodels:QuizGeneratorViewModel}">
+                <views:QuizGeneratorView/>
+            </DataTemplate>
         </ContentControl.Resources>
     </ContentControl>
 </Window>
