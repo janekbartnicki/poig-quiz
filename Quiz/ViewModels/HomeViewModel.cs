@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Quiz.ViewModels
@@ -15,13 +16,15 @@ namespace Quiz.ViewModels
         public ICommand NavigateQuizGeneratorCommand { get; }
         public ICommand NavigateQuizCommand { get; }
 
-        public ICommand ExitProgramCommand { get; }
+        public ICommand ExitCommand { get; }
 
         public HomeViewModel(NavigationStore navigationStore)
         {
             NavigateAuthorsCommand = new NavigateAuthorsCommand(navigationStore);
             NavigateQuizGeneratorCommand = new NavigateQuizGeneratorCommand(navigationStore);
             NavigateQuizCommand = new NavigateQuizCommand(navigationStore);
+
+            ExitCommand = new RelayCommand(_ => Application.Current.Shutdown());
         }
     }
 }
