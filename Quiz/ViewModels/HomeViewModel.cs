@@ -12,10 +12,16 @@ namespace Quiz.ViewModels
     class HomeViewModel : ViewModelBase
     {
         public ICommand NavigateAuthorsCommand { get; }
+        public ICommand NavigateQuizGeneratorCommand { get; }
+        public ICommand NavigateQuizCommand { get; }
+
+        public ICommand ExitProgramCommand { get; }
 
         public HomeViewModel(NavigationStore navigationStore)
         {
             NavigateAuthorsCommand = new NavigateAuthorsCommand(navigationStore);
+            NavigateQuizGeneratorCommand = new NavigateQuizGeneratorCommand(navigationStore);
+            NavigateQuizCommand = new NavigateQuizCommand(navigationStore);
         }
     }
 }

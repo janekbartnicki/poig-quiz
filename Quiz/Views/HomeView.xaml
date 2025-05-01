@@ -16,10 +16,10 @@
                        Margin="0,0,0,20"/>
 
             <StackPanel Orientation="Vertical" Width="200" HorizontalAlignment="Center" VerticalAlignment="Top" >
-                <Button Content="Wybierz Quiz" Margin="0,5" Padding="10"/>
-                <Button Content="Stwórz Quiz" Margin="0,5" Padding="10"/>
+                <Button Command="{Binding NavigateQuizCommand}" Content="Wybierz Quiz" Margin="0,5" Padding="10"/>
+                <Button Command="{Binding NavigateQuizGeneratorCommand}" Content="Stwórz Quiz" Margin="0,5" Padding="10"/>
                 <Button Command="{Binding NavigateAuthorsCommand}" Content="Autorzy" Margin="0,5" Padding="10"/>
-                <Button Content="Wyjdź" Margin="0,5" Padding="10"/>
+                <Button Command="{Binding ExitProgramCommand}" Content="Wyjdź" Margin="0,5" Padding="10"/>
             </StackPanel>
         </StackPanel>
     </Grid>
