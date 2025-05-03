@@ -12,7 +12,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0">
             <TextBlock Text="Tworzenie Quizu"
                        FontSize="48"
                        FontWeight="Bold"
@@ -45,5 +45,13 @@
                 HorizontalAlignment="Center"
                 Margin="0,20"
                 Command="{Binding NavigateHomeCommand}"/>
+        <ListView ItemsSource="{Binding QuizList}" Margin="104,200,104,0">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Tytuł" DisplayMemberBinding="{Binding Title}" Width="400"/>
+                    <GridViewColumn Header="Liczba pytań" DisplayMemberBinding="{Binding Questions.Count}" Width="100"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </UserControl>
