@@ -17,6 +17,7 @@ namespace Quiz.ViewModels
     class QuizGeneratorViewModel : ViewModelBase
     {
         public ICommand NavigateHomeCommand { get; }
+        public ICommand NavigateQuizCreatorCommand { get; }
         public ICommand ReadFileCommand { get; }
 
         public QuizRepository QuizRepository { get; }
@@ -24,6 +25,7 @@ namespace Quiz.ViewModels
         public QuizGeneratorViewModel(NavigationStore navigationStore)
         {
             NavigateHomeCommand = new NavigateHomeCommand(navigationStore);
+            NavigateQuizCreatorCommand = new NavigateQuizCreatorCommand(navigationStore);
             ReadFileCommand = new RelayCommand(_ => ReadQuizFile());
             QuizRepository = new QuizRepository("Resources/quiz_db.json", "password123");
         }
