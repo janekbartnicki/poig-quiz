@@ -31,7 +31,8 @@
                         Width="200"
                         Height="50"
                         FontSize="16"
-                        Margin="10,0"/>
+                        Margin="10,0"
+                        Command="{Binding ReadFileCommand}"/>
             </StackPanel>
         </StackPanel>
 
