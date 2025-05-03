@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using Quiz.Commands;
 using Quiz.Models;
+using Quiz.Repositories;
 
 namespace Quiz.ViewModels
 {
     public class QuizCreatorViewModel : ViewModelBase
     {
-        // Właściwości
         private string _quizTitle;
         public string QuizTitle
         {
@@ -42,6 +43,8 @@ namespace Quiz.ViewModels
         public ObservableCollection<string> Answers { get; set; } = new ObservableCollection<string> { "", "", "", "" };
         public ObservableCollection<bool> CorrectAnswers { get; set; } = new ObservableCollection<bool> { false, false, false, false };
 
+        public QuizRepository QuizRepository { get; set; }
+
         private int _currentQuestionIndex;
         public int CurrentQuestionIndex
         {
@@ -58,11 +61,9 @@ namespace Quiz.ViewModels
 
         public ObservableCollection<Question> Questions { get; set; } = new ObservableCollection<Question>();
 
-        // Komendy
         public ICommand NextQuestionCommand { get; set; }
         public ICommand FinishQuizCommand { get; set; }
 
-        // Właściwości odpowiedzialne za widoczność paneli
         private bool _isTitlePanelVisible = true;
         public bool IsTitlePanelVisible
         {
@@ -91,23 +92,20 @@ namespace Quiz.ViewModels
             }
         }
 
-        // Konstruktor
         public QuizCreatorViewModel()
         {
+            QuizRepository = new QuizRepository();
             NextQuestionCommand = new RelayCommand(_ => NextQuestion());
             FinishQuizCommand = new RelayCommand(_ => FinishQuiz());
         }
 
-        // Metoda do przejścia do kolejnego pytania
         private void NextQuestion()
         {
             if (string.IsNullOrEmpty(QuizTitle))
             {
-                // Komunikat o błędzie
                 return;
             }
 
-            // Dodanie nowego pytania
             var correctAnswersList = new List<string>();
             for (int i = 0; i < CorrectAnswers.Count; i++)
             {
@@ -126,23 +124,50 @@ namespace Quiz.ViewModels
 
             Questions.Add(newQuestion);
 
-            // Resetowanie pól
             QuestionText = "";
-            Answers = new ObservableCollection<string> { "", "", "", "" };
-            CorrectAnswers = new ObservableCollection<bool> { false, false, false, false };
 
-            // Zwiększenie indeksu pytania
+            Answers = new ObservableCollection<string> { "", "", "", "" };
+            OnPropertyChanged(nameof(Answers));
+
+            CorrectAnswers = new ObservableCollection<bool> { false, false, false, false };
+            OnPropertyChanged(nameof(CorrectAnswers));
+
             CurrentQuestionIndex++;
 
-            // Zmiana widoczności panelu
             IsTitlePanelVisible = false;
             IsQuestionPanelVisible = true;
         }
 
-        // Metoda do zakończenia tworzenia quizu
         private void FinishQuiz()
         {
-            // Tu dodaj kod do zapisania quizu np. do pliku
+            if(string.IsNullOrEmpty(QuizTitle) || Questions.Count == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                var quiz = new Quiz.Models.Quiz(QuizTitle, Questions.ToList());
+
+                QuizRepository.AddOrUpdate(quiz);
+
+                MessageBox.Show(
+                    $"Pomyślnie stworzono quiz {QuizTitle}!",
+                    "Stworzono nowy quiz",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information,
+                    MessageBoxResult.OK
+                );
+            } catch
+            {
+                MessageBox.Show(
+                    "Wystąpił błąd.",
+                    "Błąd",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    MessageBoxResult.OK
+                );
+            }
         }
     }
 }

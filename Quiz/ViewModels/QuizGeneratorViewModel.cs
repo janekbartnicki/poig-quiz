@@ -22,12 +22,15 @@ namespace Quiz.ViewModels
 
         public QuizRepository QuizRepository { get; }
 
+        public List<Quiz.Models.Quiz> QuizList { get; set; }
+
         public QuizGeneratorViewModel(NavigationStore navigationStore)
         {
             NavigateHomeCommand = new NavigateHomeCommand(navigationStore);
             NavigateQuizCreatorCommand = new NavigateQuizCreatorCommand(navigationStore);
             ReadFileCommand = new RelayCommand(_ => ReadQuizFile());
-            QuizRepository = new QuizRepository("Resources/quiz_db.json", "password123");
+            QuizRepository = new QuizRepository();
+            QuizList = QuizRepository.LoadAll();
         }
 
         private void ReadQuizFile()

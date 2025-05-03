@@ -21,6 +21,12 @@ namespace Quiz.Repositories
             _password = password;
         }
 
+        public QuizRepository()
+        {
+            _filePath = "Resources/quiz_db.json";
+            _password = "password123";
+        }
+
         public List<Quiz.Models.Quiz> LoadAll()
         {
             if (!File.Exists(_filePath))
