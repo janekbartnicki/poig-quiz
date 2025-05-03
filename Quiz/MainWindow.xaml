@@ -24,6 +24,9 @@
             <DataTemplate DataType="{x:Type viewmodels:AuthorsViewModel}">
                 <views:AuthorsView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type viewmodels:QuizCreatorViewModel}">
+                <views:QuizCreatorView/>
+            </DataTemplate>
         </ContentControl.Resources>
     </ContentControl>
 </Window>
