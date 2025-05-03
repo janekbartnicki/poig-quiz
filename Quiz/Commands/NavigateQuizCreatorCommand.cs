@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 
 namespace Quiz.Commands
 {
-    class NavigateQuizGeneratorCommand : CommandBase
+    class NavigateQuizCreatorCommand : CommandBase
     {
         private readonly NavigationStore _navigationStore;
 
-        public NavigateQuizGeneratorCommand(NavigationStore navigationStore)
+        public NavigateQuizCreatorCommand(NavigationStore navigationStore)
         {
             _navigationStore = navigationStore;
         }
 
         public override void Execute(object parameter)
         {
-            _navigationStore.CurrentViewModel = new QuizGeneratorViewModel(_navigationStore);
+            _navigationStore.CurrentViewModel = new QuizCreatorViewModel();
         }
     }
 }
