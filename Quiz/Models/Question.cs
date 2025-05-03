@@ -9,12 +9,17 @@ namespace Quiz.Models
     public class Question
     {
         public string Text { get; set; }
-        public string CorrectAnswer { get; set; }
+        public List<string> CorrectAnswers { get; set; }
         public List<string> Questions { get; set; }
 
-        public bool IsAnswerCorrect(string answer)
+        public bool IsAnswerCorrect(List<string> answers)
         {
-            return answer == CorrectAnswer;
+            if (answers == null || CorrectAnswers == null)
+                return false;
+
+            return answers.Count == CorrectAnswers.Count &&
+                   !answers.Except(CorrectAnswers).Any() &&
+                   !CorrectAnswers.Except(answers).Any();
         }
     }
 }
