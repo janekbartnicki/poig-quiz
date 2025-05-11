@@ -42,10 +42,24 @@
                 Width="250"
                 Height="40"
                 FontSize="14"
-                HorizontalAlignment="Center"
-                Margin="0,20"
+                HorizontalAlignment="Left"
+                Margin="104,20,0,20"
                 Command="{Binding NavigateHomeCommand}"/>
-        <ListView ItemsSource="{Binding QuizList}" Margin="104,200,104,0">
+
+        <Button Grid.Row="1"
+            Content="Edytuj zaznaczony"
+            Width="250"
+            Height="40"
+            FontSize="14"
+            HorizontalAlignment="Left"
+            Margin="446,20,0,20"
+            Command="{Binding EditQuizCommand}"/>
+
+        <ListView 
+                ItemsSource="{Binding QuizList}"
+                Margin="104,200,104,0"
+                SelectedItem="{Binding SelectedQuiz}"
+            >
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Tytuł" DisplayMemberBinding="{Binding Title}" Width="400"/>

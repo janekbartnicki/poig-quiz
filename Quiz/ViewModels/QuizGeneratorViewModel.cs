@@ -19,6 +19,22 @@ namespace Quiz.ViewModels
         public ICommand NavigateHomeCommand { get; }
         public ICommand NavigateQuizCreatorCommand { get; }
         public ICommand ReadFileCommand { get; }
+        public ICommand EditQuizCommand { get; }
+
+        private Quiz.Models.Quiz _selectedQuiz;
+
+        public Quiz.Models.Quiz SelectedQuiz
+        {
+            get { return _selectedQuiz; }
+            set
+            {
+                if (_selectedQuiz != value)
+                {
+                    _selectedQuiz = value;
+                    OnPropertyChanged(nameof(SelectedQuiz));
+                }
+            }
+        }
 
         public QuizRepository QuizRepository { get; }
 
@@ -29,6 +45,14 @@ namespace Quiz.ViewModels
             NavigateHomeCommand = new NavigateHomeCommand(navigationStore);
             NavigateQuizCreatorCommand = new NavigateQuizCreatorCommand(navigationStore);
             ReadFileCommand = new RelayCommand(_ => ReadQuizFile());
+            EditQuizCommand = new RelayCommand(_ =>
+            {
+                if (SelectedQuiz != null)
+                {
+                    NavigateQuizCreatorCommand.Execute(SelectedQuiz);
+                }
+            });
+
             QuizRepository = new QuizRepository();
             QuizList = QuizRepository.LoadAll();
         }
