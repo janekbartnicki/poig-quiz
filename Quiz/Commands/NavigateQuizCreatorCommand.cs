@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Quiz.Commands
 {
@@ -19,7 +20,13 @@ namespace Quiz.Commands
 
         public override void Execute(object parameter)
         {
-            _navigationStore.CurrentViewModel = new QuizCreatorViewModel();
+            if(parameter != null)
+            {
+                _navigationStore.CurrentViewModel = new QuizCreatorViewModel(_navigationStore, (Quiz.Models.Quiz)parameter);
+            } else
+            {
+                _navigationStore.CurrentViewModel = new QuizCreatorViewModel(_navigationStore);
+            }
         }
     }
 }

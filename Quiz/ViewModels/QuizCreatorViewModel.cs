@@ -7,11 +7,14 @@ using System.Windows.Input;
 using Quiz.Commands;
 using Quiz.Models;
 using Quiz.Repositories;
+using Quiz.Stores;
 
 namespace Quiz.ViewModels
 {
     public class QuizCreatorViewModel : ViewModelBase
     {
+        public ICommand NavigateQuizGeneratorCommand { get; }
+
         private string _quizTitle;
         public string QuizTitle
         {
@@ -92,12 +95,36 @@ namespace Quiz.ViewModels
             }
         }
 
-        public QuizCreatorViewModel()
+        public QuizCreatorViewModel(NavigationStore navigationStore)
         {
             QuizRepository = new QuizRepository();
+            NavigateQuizGeneratorCommand = new NavigateQuizGeneratorCommand(navigationStore);
             NextQuestionCommand = new RelayCommand(_ => NextQuestion());
             FinishQuizCommand = new RelayCommand(_ => FinishQuiz());
         }
+
+        public QuizCreatorViewModel(NavigationStore navigationStore, Quiz.Models.Quiz existingQuiz) : this(navigationStore)
+        {
+            QuizTitle = existingQuiz.Title;
+            Questions = new ObservableCollection<Question>(existingQuiz.Questions);
+
+            var firstQuestion = existingQuiz.Questions[0];
+            if (firstQuestion != null)
+            {
+                QuestionText = firstQuestion.Text;
+                Answers = new ObservableCollection<string>(firstQuestion.Questions);
+                CorrectAnswers = new ObservableCollection<bool>(
+                    firstQuestion.Questions.Select(q => firstQuestion.CorrectAnswers.Contains(q))
+                );
+
+                OnPropertyChanged(nameof(Answers));
+                OnPropertyChanged(nameof(CorrectAnswers));
+            }
+
+            IsTitlePanelVisible = false;
+            IsQuestionPanelVisible = true;
+        }
+
 
         private void NextQuestion()
         {
@@ -158,6 +185,8 @@ namespace Quiz.ViewModels
                     MessageBoxImage.Information,
                     MessageBoxResult.OK
                 );
+
+                NavigateQuizGeneratorCommand.Execute(null);
             } catch
             {
                 MessageBox.Show(
