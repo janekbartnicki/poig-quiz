@@ -1,0 +1,144 @@
+﻿<UserControl x:Class="QuizApp.Views.SummaryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:QuizApp.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" 
+                   Text="Podsumowanie Quizu" 
+                   FontSize="28" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,20" 
+                   Foreground="#2c3e50"/>
+
+        <!-- Score Information -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,30">
+            <TextBlock Text="{Binding ScoreSummary}" 
+                       FontSize="22" 
+                       Foreground="#27ae60" 
+                       Margin="0,0,0,10"/>
+
+            <TextBlock Text="{Binding PercentageScore, StringFormat='{}{0:P0} poprawnych odpowiedzi'}" 
+                       FontSize="18" 
+                       Foreground="#7f8c8d" 
+                       Margin="0,0,0,10"/>
+
+            <ProgressBar Value="{Binding PercentageScore}" 
+                         Maximum="1" 
+                         Height="15" 
+                         Margin="0,10,0,0" 
+                         Background="#ecf0f1" 
+                         Foreground="#2ecc71"/>
+        </StackPanel>
+
+        <!-- Questions Review -->
+        <ScrollViewer Grid.Row="2">
+            <ItemsControl ItemsSource="{Binding QuestionSummaries}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,15" 
+                                BorderThickness="0,0,0,1" 
+                                BorderBrush="#ecf0f1" 
+                                Padding="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Correct/Incorrect Icon -->
+                                <Border Grid.Column="0" 
+                                        Width="40" 
+                                        Height="40" 
+                                        CornerRadius="20" 
+                                        Background="{Binding IsCorrect, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#27ae60,#e74c3c'}" 
+                                        Margin="0,0,15,0">
+                                    <TextBlock Text="{Binding IsCorrect, Converter={StaticResource BoolToIconConverter}, ConverterParameter='✓,✗'}" 
+                                               Foreground="White" 
+                                               FontSize="20" 
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Question and Answer Details -->
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{Binding Question}" 
+                                               FontSize="16" 
+                                               FontWeight="SemiBold" 
+                                               TextWrapping="Wrap" 
+                                               Margin="0,0,0,5"/>
+
+                                    <TextBlock Text="{Binding YourAnswer, StringFormat='Twoja odpowiedź: {0}'}" 
+                                               Foreground="#7f8c8d" 
+                                               TextWrapping="Wrap" 
+                                               Margin="0,0,0,5"/>
+
+                                    <TextBlock Text="{Binding CorrectAnswer, StringFormat='Poprawna odpowiedź: {0}'}" 
+                                               Foreground="#27ae60" 
+                                               TextWrapping="Wrap" 
+                                               Visibility="{Binding IsCorrect, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Collapsed}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+            <Button Content="Rozpocznij nowy quiz" 
+                    Command="{Binding RestartQuizCommand}" 
+                    Width="180" 
+                    Height="40"
+                    Margin="0,0,10,0"
+                    Background="#3498db"
+                    Foreground="White"
+                    FontSize="14"
+                    BorderThickness="0">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <Button Content="Wyjdź" 
+                    Command="{Binding ExitCommand}" 
+                    Width="100" 
+                    Height="40"
+                    Background="#e74c3c"
+                    Foreground="White"
+                    FontSize="14"
+                    BorderThickness="0">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>
