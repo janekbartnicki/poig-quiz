@@ -10,6 +10,7 @@
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
         <converters:BoolToTextColorConverter x:Key="BoolToTextColorConverter"/>
         <converters:BoolToAnswerStatusConverter x:Key="BoolToAnswerStatusConverter"/>
@@ -25,11 +26,11 @@
         </Grid.RowDefinitions>
 
         <!-- Nagłówek -->
-        <StackPanel Grid.Row="0" Margin="10,10,10,10" Grid.RowSpan="2">
+        <StackPanel Grid.Row="0" Margin="10" Grid.RowSpan="2">
             <Grid>
-                <!-- Zastąpiono dwa przyciski jednym z dynamiczną treścią -->
                 <Button Command="{Binding LoadQuizCommand}" 
-                        HorizontalAlignment="Left" Padding="10,5" Margin="0,0,0,10">
+                        HorizontalAlignment="Left" Padding="10,5" Margin="0,0,0,10"
+                        Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Button.Content>
                         <TextBlock Text="{Binding IsQuizFinished, Converter={StaticResource BoolToAnswerStatusConverter}, 
                                  ConverterParameter=Wczytaj Quiz;Wczytaj inny Quiz}"/>
@@ -37,7 +38,7 @@
                 </Button>
             </Grid>
 
-            <TextBlock Text="{Binding CurrentQuiz.Title, Mode=OneWay}" 
+            <TextBlock Text="{Binding CurrentQuiz.Title}" 
                        FontSize="24" FontWeight="Bold" 
                        HorizontalAlignment="Center"
                        Visibility="{Binding IsQuizLoaded, Converter={StaticResource BooleanToVisibilityConverter}}"/>
@@ -55,11 +56,9 @@
                     <Run Text="{Binding TotalQuestions, Mode=OneWay}"/>
                 </TextBlock>
 
-                <!-- Poprawiona logika wyświetlania czasu -->
-                <TextBlock Grid.Column="1" 
-                           Visibility="{Binding IsQuizLoaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Grid.Column="1">
                     <Run Text="Czas: "/>
-                    <Run Text="{Binding TimeLeft, Mode=OneWay}"/>
+                    <Run Text="{Binding TimeLeft}"/>
                     <Run Text=" s"/>
                 </TextBlock>
             </Grid>
@@ -68,12 +67,12 @@
         <!-- Zawartość główna -->
         <Grid Grid.Row="2" Margin="20,10,20,10">
             <!-- Ekran powitalny -->
-            <StackPanel Visibility="{Binding IsQuizLoaded, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=inverse}"
-                      VerticalAlignment="Center">
+            <StackPanel Visibility="{Binding IsQuizLoaded, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                        VerticalAlignment="Center">
                 <TextBlock Text="Witaj w aplikacji Quiz!" 
                            FontSize="24" FontWeight="Bold" 
                            HorizontalAlignment="Center"/>
-                <TextBlock Text="Aby rozpocząć, kliknij przycisk 'Wczytaj Quiz' i wybierz plik .txt z quizem." 
+                <TextBlock Text="Aby rozpocząć, kliknij przycisk 'Wczytaj Quiz' i wybierz plik .json z quizem." 
                            FontSize="16" TextWrapping="Wrap" 
                            HorizontalAlignment="Center" 
                            Margin="0,20"/>
@@ -84,25 +83,25 @@
                         Margin="0,20"/>
             </StackPanel>
 
-            <!-- Pytanie i odpowiedzi - widoczne tylko podczas odpowiadania -->
-            <StackPanel Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=inverse}">
-                <TextBlock Text="{Binding CurrentQuestion.Text, Mode=OneWay}" 
+            <!-- Pytania -->
+            <StackPanel Visibility="{Binding IsQuizFinished, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                <TextBlock Text="{Binding CurrentQuestion.Text}" 
                            FontSize="18" FontWeight="SemiBold" 
                            TextWrapping="Wrap" 
                            Margin="0,0,0,20"/>
 
-                <ItemsControl ItemsSource="{Binding CurrentQuestion.Answers, Mode=OneWay}">
+                <ItemsControl ItemsSource="{Binding CurrentQuestion.Answers}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <CheckBox Content="{Binding Text}" 
-                                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                      IsChecked="{Binding IsSelected, Mode=TwoWay}" 
                                       FontSize="16" Margin="0,5"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </StackPanel>
 
-            <!-- Ekran wyników -->
+            <!-- Wyniki -->
             <ScrollViewer Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel>
                     <TextBlock Text="Wyniki" 
@@ -118,16 +117,16 @@
 
                         <StackPanel Grid.Column="0" HorizontalAlignment="Center">
                             <TextBlock Text="Poprawne odpowiedzi:" FontSize="16" Margin="0,5"/>
-                            <TextBlock Text="{Binding CorrectAnswersCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding CorrectAnswersCount}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" HorizontalAlignment="Center">
                             <TextBlock Text="Wynik procentowy:" FontSize="16" Margin="0,5"/>
-                            <TextBlock Text="{Binding ScorePercentage, Mode=OneWay, StringFormat={}{0}%}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding ScorePercentage, StringFormat={}{0}%}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
 
-                    <ItemsControl ItemsSource="{Binding QuizResults, Mode=OneWay}">
+                    <ItemsControl ItemsSource="{Binding QuizResults}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border BorderBrush="{Binding IsCorrect, Converter={StaticResource BoolToColorConverter}}" 
@@ -164,7 +163,7 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- Przyciski nawigacyjne -->
+        <!-- Przyciski -->
         <Grid Grid.Row="3" Margin="20,10,20,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -176,7 +175,7 @@
                     Command="{Binding NextQuestionCommand}" 
                     Grid.Column="1"
                     Padding="15,5" 
-                    Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=inverse}"/>
+                    Visibility="{Binding IsQuizFinished, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
 
             <Button Content="Rozpocznij ponownie" 
                     Command="{Binding RestartQuizCommand}" 

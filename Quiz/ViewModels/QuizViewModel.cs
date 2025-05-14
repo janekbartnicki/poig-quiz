@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -203,7 +203,7 @@ namespace Quiz.ViewModels
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Filter = "Quiz Files (*.json)|*.json|All Files (*.*)|*.*",
+                Filter = "Quiz Files (*.json, *.txt)|*.json;*.txt|JSON Files (*.json)|*.json|Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
                 Title = "Wybierz plik z quizem"
             };
 
@@ -212,10 +212,24 @@ namespace Quiz.ViewModels
                 try
                 {
                     string filePath = openFileDialog.FileName;
-                    string json = File.ReadAllText(filePath);
-                    CurrentQuiz = JsonSerializer.Deserialize<Models.Quiz>(json);
+                    string extension = Path.GetExtension(filePath).ToLower();
 
-                    // Reset quiz state
+                    if (extension == ".json")
+                    {
+                        LoadQuizFromJson(filePath);
+                    }
+                    else if (extension == ".txt")
+                    {
+                        LoadQuizFromText(filePath);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Nieobsługiwany format pliku. Wybierz plik .json lub .txt.", "Błąd",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    // Initialize quiz state
                     CurrentQuestionIndex = 0;
                     _allUserAnswers.Clear();
                     QuizResults.Clear();
@@ -226,6 +240,11 @@ namespace Quiz.ViewModels
                     // Initialize answers for the first question
                     InitializeAnswersForCurrentQuestion();
 
+                    // Upewnij się, że widok powitalny jest ukryty
+                    OnPropertyChanged(nameof(IsQuizLoaded));
+                    OnPropertyChanged(nameof(CurrentQuiz));
+                    OnPropertyChanged(nameof(CurrentQuestion));
+
                     // Start the timer
                     StartTimer();
                 }
@@ -235,6 +254,69 @@ namespace Quiz.ViewModels
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private void LoadQuizFromJson(string filePath)
+        {
+            string json = File.ReadAllText(filePath);
+            CurrentQuiz = JsonSerializer.Deserialize<Models.Quiz>(json);
+        }
+
+        private void LoadQuizFromText(string filePath)
+        {
+            // Przygotuj dane z pliku tekstowego
+            string[] lines = File.ReadAllLines(filePath);
+            string title = lines.Length > 0 ? lines[0] : "Quiz"; // First line is the quiz title
+
+            // Utwórz obiekt Quiz w taki sam sposób jak w metodzie LoadQuizFromJson
+            Models.Quiz quiz = new Models.Quiz(title, new List<Question>());
+
+            Question currentQuestion = null;
+            List<string> options = new List<string>();
+            List<string> correctAnswers = new List<string>();
+
+            for (int i = 1; i < lines.Length; i++)
+            {
+                string line = lines[i].Trim();
+
+                // Skip empty lines
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                // Check if this is a question line
+                if (!line.StartsWith("[") && currentQuestion == null)
+                {
+                    // This is a new question
+                    currentQuestion = new Question();
+                    currentQuestion.Text = line;
+                    options = new List<string>();
+                    correctAnswers = new List<string>();
+                }
+                // Check if this is an answer option
+                else if (line.StartsWith("[") && currentQuestion != null)
+                {
+                    string option = line.Substring(line.IndexOf(']') + 1).Trim();
+                    options.Add(option);
+
+                    // Check if this option is marked as correct
+                    if (line.StartsWith("[X]") || line.StartsWith("[x]"))
+                    {
+                        correctAnswers.Add(option);
+                    }
+
+                    // If this is the last option for the current question
+                    if (i == lines.Length - 1 || (!string.IsNullOrWhiteSpace(lines[i + 1]) && !lines[i + 1].Trim().StartsWith("[")))
+                    {
+                        // Finalize the current question
+                        currentQuestion.Questions = options;
+                        currentQuestion.CorrectAnswers = correctAnswers;
+                        quiz.Questions.Add(currentQuestion);
+                        currentQuestion = null;
+                    }
+                }
+            }
+
+            CurrentQuiz = quiz;
         }
 
         private void InitializeAnswersForCurrentQuestion()
