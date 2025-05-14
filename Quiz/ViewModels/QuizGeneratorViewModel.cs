@@ -18,6 +18,7 @@ namespace Quiz.ViewModels
     {
         public ICommand NavigateHomeCommand { get; }
         public ICommand NavigateQuizCreatorCommand { get; }
+        public ICommand NavigateQuizEditorCommand { get; }
         public ICommand ReadFileCommand { get; }
         public ICommand EditQuizCommand { get; }
 
@@ -44,12 +45,13 @@ namespace Quiz.ViewModels
         {
             NavigateHomeCommand = new NavigateHomeCommand(navigationStore);
             NavigateQuizCreatorCommand = new NavigateQuizCreatorCommand(navigationStore);
+            NavigateQuizEditorCommand = new NavigateQuizEditorCommand(navigationStore);
             ReadFileCommand = new RelayCommand(_ => ReadQuizFile());
             EditQuizCommand = new RelayCommand(_ =>
             {
                 if (SelectedQuiz != null)
                 {
-                    NavigateQuizCreatorCommand.Execute(SelectedQuiz);
+                    NavigateQuizEditorCommand.Execute(SelectedQuiz);
                 }
             });
 

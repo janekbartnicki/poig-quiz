@@ -22,7 +22,7 @@ namespace Quiz.Commands
         {
             if(parameter != null)
             {
-                _navigationStore.CurrentViewModel = new QuizCreatorViewModel(_navigationStore, (Quiz.Models.Quiz)parameter);
+                //_navigationStore.CurrentViewModel = new QuizCreatorViewModel(_navigationStore, (Quiz.Models.Quiz)parameter);
             } else
             {
                 _navigationStore.CurrentViewModel = new QuizCreatorViewModel(_navigationStore);

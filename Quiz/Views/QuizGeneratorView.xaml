@@ -59,6 +59,7 @@
                 ItemsSource="{Binding QuizList}"
                 Margin="104,200,104,0"
                 SelectedItem="{Binding SelectedQuiz}"
+                MouseDoubleClick="ListView_MouseDoubleClick"
             >
             <ListView.View>
                 <GridView>
