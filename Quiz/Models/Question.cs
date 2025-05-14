@@ -12,6 +12,9 @@ namespace Quiz.Models
         public List<string> CorrectAnswers { get; set; }
         public List<string> Questions { get; set; }
 
+        // Właściwość, która sprawdza, czy pytanie ma wiele poprawnych odpowiedzi
+        public bool HasMultipleCorrectAnswers => CorrectAnswers != null && CorrectAnswers.Count > 1;
+
         public bool IsAnswerCorrect(List<string> answers)
         {
             if (answers == null || CorrectAnswers == null)
