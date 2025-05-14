@@ -31,12 +31,8 @@
             <Grid>
                 <Button Command="{Binding LoadQuizCommand}" 
                         HorizontalAlignment="Left" Padding="10,5" Margin="0,0,0,10"
-                        Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Button.Content>
-                        <TextBlock Text="{Binding IsQuizFinished, Converter={StaticResource BoolToAnswerStatusConverter}, 
-                                 ConverterParameter=Wczytaj Quiz;Wczytaj inny Quiz}"/>
-                    </Button.Content>
-                </Button>
+                        Content="Wczytaj nowy Quiz"
+                        Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </Grid>
 
             <TextBlock Text="{Binding CurrentQuiz.Title}" 

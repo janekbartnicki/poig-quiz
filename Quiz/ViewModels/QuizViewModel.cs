@@ -170,9 +170,11 @@ namespace Quiz.ViewModels
         {
             get
             {
-                if (CurrentQuestion == null || CurrentQuestion.CorrectAnswers == null)
-                    return "Wybierz odpowiedź";
+                // Sprawdź najpierw, czy quiz jest załadowany i nie jest zakończony
+                if (!IsQuizLoaded || IsQuizFinished || CurrentQuestion == null || CurrentQuestion.CorrectAnswers == null)
+                    return string.Empty;
 
+                // Teraz zwróć informację o liczbie odpowiedzi tylko gdy quiz jest aktywny
                 if (CurrentQuestion.CorrectAnswers.Count == 1)
                     return "Wybierz jedną odpowiedź";
                 else
