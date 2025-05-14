@@ -5,14 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:conv="clr-namespace:Quiz.Converters"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="500" d:DesignWidth="800">
 
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </UserControl.Resources>
 
-    <Grid Margin="20" Background="White">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="20" Background="White">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Width="400">
 
                 <TextBlock Text="Edytuj quiz" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
@@ -45,8 +45,17 @@
                           DisplayMemberPath="Text"
                           Margin="0,0,0,10"/>
 
-                <Button Content="Zapisz zmiany" Command="{Binding SaveCommand}" Width="150" HorizontalAlignment="Center" Margin="0,20,0,40"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <Button Content="Dodaj pytanie" Command="{Binding AddQuestionCommand}" Margin="5"/>
+                    <Button Content="Usuń pytanie" Command="{Binding DeleteQuestionCommand}" Margin="5"/>
+                </StackPanel>
+
+                <Button Content="Zapisz zmiany"
+                        Command="{Binding SaveCommand}"
+                        Width="150"
+                        HorizontalAlignment="Center"
+                        Margin="0,20,0,0"/>
             </StackPanel>
-        </ScrollViewer>
-    </Grid>
+        </Grid>
+    </ScrollViewer>
 </UserControl>

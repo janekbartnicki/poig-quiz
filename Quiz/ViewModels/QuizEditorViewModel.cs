@@ -13,6 +13,8 @@ namespace Quiz.ViewModels
     {
         public ICommand SaveCommand { get; }
         public ICommand NavigateQuizGeneratorCommand { get; }
+        public ICommand AddQuestionCommand { get; }
+        public ICommand DeleteQuestionCommand { get; }
 
         private readonly NavigationStore _navigationStore;
         private readonly QuizRepository _quizRepository;
@@ -75,6 +77,9 @@ namespace Quiz.ViewModels
 
             NavigateQuizGeneratorCommand = new NavigateQuizGeneratorCommand(navigationStore);
             SaveCommand = new RelayCommand(_ => SaveQuiz());
+
+            AddQuestionCommand = new RelayCommand(_ => AddNewQuestion());
+            DeleteQuestionCommand = new RelayCommand(_ => DeleteCurrentQuestion(), _ => Questions.Count > 0);
 
             QuizTitle = quizToEdit.Title;
             Questions = new ObservableCollection<Question>(quizToEdit.Questions);
@@ -156,6 +161,41 @@ namespace Quiz.ViewModels
             catch
             {
                 MessageBox.Show("Wystąpił błąd przy zapisie.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void AddNewQuestion()
+        {
+            var newQuestion = new Question
+            {
+                Text = "Nowe pytanie",
+                Questions = new List<string> { "", "", "", "" },
+                CorrectAnswers = new List<string>()
+            };
+
+            Questions.Add(newQuestion);
+            CurrentQuestionIndex = Questions.Count - 1;
+            LoadCurrentQuestion();
+        }
+
+        private void DeleteCurrentQuestion()
+        {
+            if (CurrentQuestionIndex >= 0 && CurrentQuestionIndex < Questions.Count)
+            {
+                Questions.RemoveAt(CurrentQuestionIndex);
+                if (Questions.Count > 0)
+                {
+                    CurrentQuestionIndex = Math.Max(0, CurrentQuestionIndex - 1);
+                    LoadCurrentQuestion();
+                }
+                else
+                {
+                    QuestionText = "";
+                    Answers = new ObservableCollection<string> { "", "", "", "" };
+                    CorrectAnswers = new ObservableCollection<bool> { false, false, false, false };
+                    OnPropertyChanged(nameof(Answers));
+                    OnPropertyChanged(nameof(CorrectAnswers));
+                }
             }
         }
     }
