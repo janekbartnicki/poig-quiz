@@ -15,6 +15,7 @@
         <converters:BoolToTextColorConverter x:Key="BoolToTextColorConverter"/>
         <converters:BoolToAnswerStatusConverter x:Key="BoolToAnswerStatusConverter"/>
         <converters:ListToStringConverter x:Key="ListToStringConverter"/>
+        <converters:IndexConverter x:Key="IndexConverter"/>
     </UserControl.Resources>
 
     <Grid Background="#F5F5F5">
@@ -88,14 +89,23 @@
                 <TextBlock Text="{Binding CurrentQuestion.Text}" 
                            FontSize="18" FontWeight="SemiBold" 
                            TextWrapping="Wrap" 
-                           Margin="0,0,0,20"/>
+                           Margin="0,0,0,5"/>
+                
+                <!-- Informacja o możliwości wielokrotnego wyboru -->
+                <TextBlock Text="{Binding MultipleChoiceInfo}" 
+                           FontSize="14" 
+                           FontStyle="Italic" 
+                           Foreground="#0066CC"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,15"/>
 
-                <ItemsControl ItemsSource="{Binding CurrentQuestion.Answers}">
+                <ItemsControl ItemsSource="{Binding CurrentVisibleAnswers}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <CheckBox Content="{Binding Text}" 
-                                      IsChecked="{Binding IsSelected, Mode=TwoWay}" 
-                                      FontSize="16" Margin="0,5"/>
+                                     IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                     FontSize="16" 
+                                     Margin="0,5"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -168,18 +178,40 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Button Content="Następne pytanie" 
-                    Command="{Binding NextQuestionCommand}" 
+            <!-- Przycisk do poprzedniego pytania -->
+            <Button Content="Poprzednie pytanie" 
+                    Command="{Binding PreviousQuestionCommand}" 
                     Grid.Column="1"
+                    Padding="15,5" Margin="0,0,10,0"
+                    Visibility="{Binding CanGoPrevious, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            
+            <!-- Przycisk do następnego pytania lub zakończenia -->
+            <Button Grid.Column="2"
+                    Command="{Binding NextQuestionCommand}" 
                     Padding="15,5" 
-                    Visibility="{Binding IsQuizFinished, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                    Visibility="{Binding IsQuizFinished, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLastQuestion}" Value="True">
+                                <Setter Property="Content" Value="Zakończ Quiz" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsLastQuestion}" Value="False">
+                                <Setter Property="Content" Value="Następne pytanie" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
 
+            <!-- Przycisk do rozpoczęcia od nowa (widoczny po zakończeniu quizu) -->
             <Button Content="Rozpocznij ponownie" 
                     Command="{Binding RestartQuizCommand}" 
-                    Grid.Column="2"
+                    Grid.Column="3"
                     HorizontalAlignment="Right"
                     Padding="15,5" 
                     Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}}"/>

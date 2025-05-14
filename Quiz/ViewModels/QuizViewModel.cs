@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Windows.Controls;
 using Microsoft.Win32;
 using Quiz.Commands;
 using Quiz.Models;
@@ -27,6 +28,7 @@ namespace Quiz.ViewModels
         private bool _isQuizFinished = false;
         private bool _isTimerRunning = false;
         private int _correctAnswersCount = 0;
+        private ObservableCollection<AnswerAdapter> _currentVisibleAnswers;
 
         // Properties for binding
         public Models.Quiz CurrentQuiz
@@ -63,6 +65,8 @@ namespace Quiz.ViewModels
                     OnPropertyChanged(nameof(CurrentQuestionIndex));
                     OnPropertyChanged(nameof(CurrentQuestion));
                     OnPropertyChanged(nameof(QuestionNumber));
+                    OnPropertyChanged(nameof(IsLastQuestion));
+                    OnPropertyChanged(nameof(CanGoPrevious));
                 }
             }
         }
@@ -82,6 +86,16 @@ namespace Quiz.ViewModels
             {
                 _selectedAnswers = value;
                 OnPropertyChanged(nameof(SelectedAnswers));
+            }
+        }
+
+        public ObservableCollection<AnswerAdapter> CurrentVisibleAnswers
+        {
+            get { return _currentVisibleAnswers; }
+            set
+            {
+                _currentVisibleAnswers = value;
+                OnPropertyChanged(nameof(CurrentVisibleAnswers));
             }
         }
 
@@ -142,15 +156,43 @@ namespace Quiz.ViewModels
 
         public ObservableCollection<QuestionResultViewModel> QuizResults { get; } = new ObservableCollection<QuestionResultViewModel>();
 
+        public bool IsLastQuestion
+        {
+            get { return CurrentQuestionIndex == TotalQuestions - 1; }
+        }
+
+        public bool CanGoPrevious
+        {
+            get { return IsQuizLoaded && !IsQuizFinished && CurrentQuestionIndex > 0; }
+        }
+
+        public string MultipleChoiceInfo
+        {
+            get
+            {
+                if (CurrentQuestion == null || CurrentQuestion.CorrectAnswers == null)
+                    return "Wybierz odpowiedź";
+
+                if (CurrentQuestion.CorrectAnswers.Count == 1)
+                    return "Wybierz jedną odpowiedź";
+                else
+                    return $"Wybierz {CurrentQuestion.CorrectAnswers.Count} odpowiedzi";
+            }
+        }
+
         // Commands
         public ICommand LoadQuizCommand { get; }
         public ICommand NextQuestionCommand { get; }
+        public ICommand PreviousQuestionCommand { get; }
+        public ICommand FinishQuizCommand { get; }
         public ICommand RestartQuizCommand { get; }
 
         public QuizViewModel()
         {
             LoadQuizCommand = new RelayCommand(_ => LoadQuiz());
-            NextQuestionCommand = new RelayCommand(_ => NextQuestion(), _ => CanGoToNextQuestion());
+            NextQuestionCommand = new RelayCommand(_ => NextQuestion(), CanGoToNextQuestion);
+            PreviousQuestionCommand = new RelayCommand(_ => PreviousQuestion(), _ => CanGoPrevious);
+            FinishQuizCommand = new RelayCommand(_ => FinishQuiz(), _ => IsQuizLoaded && !IsQuizFinished);
             RestartQuizCommand = new RelayCommand(_ => RestartQuiz());
 
             InitializeTimer();
@@ -194,9 +236,11 @@ namespace Quiz.ViewModels
             }
         }
 
-        private bool CanGoToNextQuestion()
+        private bool CanGoToNextQuestion(object parameter)
         {
-            return IsQuizLoaded && !IsQuizFinished;
+            // Uproszczona wersja bez sprawdzania indeksu - to mogło być problemem
+            bool canExecute = IsQuizLoaded && !IsQuizFinished;
+            return canExecute;
         }
 
         private void LoadQuiz()
@@ -228,6 +272,13 @@ namespace Quiz.ViewModels
                             MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
+                    
+                    // Sprawdź, czy quiz został załadowany prawidłowo
+                    if (CurrentQuiz == null || CurrentQuiz.Questions == null || CurrentQuiz.Questions.Count == 0)
+                    {
+                        MessageBox.Show("Quiz nie zawiera żadnych pytań!", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
 
                     // Initialize quiz state
                     CurrentQuestionIndex = 0;
@@ -244,9 +295,14 @@ namespace Quiz.ViewModels
                     OnPropertyChanged(nameof(IsQuizLoaded));
                     OnPropertyChanged(nameof(CurrentQuiz));
                     OnPropertyChanged(nameof(CurrentQuestion));
+                    OnPropertyChanged(nameof(IsLastQuestion));
+                    OnPropertyChanged(nameof(CanGoPrevious));
 
                     // Start the timer
                     StartTimer();
+                    
+                    // Force command evaluation
+                    CommandManager.InvalidateRequerySuggested();
                 }
                 catch (Exception ex)
                 {
@@ -264,108 +320,179 @@ namespace Quiz.ViewModels
 
         private void LoadQuizFromText(string filePath)
         {
-            // Przygotuj dane z pliku tekstowego
-            string[] lines = File.ReadAllLines(filePath);
-            string title = lines.Length > 0 ? lines[0] : "Quiz"; // First line is the quiz title
-
-            // Utwórz obiekt Quiz w taki sam sposób jak w metodzie LoadQuizFromJson
-            Models.Quiz quiz = new Models.Quiz(title, new List<Question>());
-
-            Question currentQuestion = null;
-            List<string> options = new List<string>();
-            List<string> correctAnswers = new List<string>();
-
-            for (int i = 1; i < lines.Length; i++)
+            try
             {
-                string line = lines[i].Trim();
-
-                // Skip empty lines
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                // Check if this is a question line
-                if (!line.StartsWith("[") && currentQuestion == null)
+                // Odczytaj wszystkie linie z pliku
+                string[] lines = File.ReadAllLines(filePath);
+                
+                // Pierwszy wiersz to tytuł
+                string title = lines.Length > 0 ? lines[0] : "Quiz";
+                
+                // Lista wszystkich pytań
+                List<Question> questions = new List<Question>();
+                
+                // Tymczasowe zmienne do budowania pytania
+                Question currentQ = null;
+                List<string> options = null;
+                List<string> correctOptions = null;
+                
+                // Przetwarzanie każdej linii
+                for (int i = 1; i < lines.Length; i++)
                 {
-                    // This is a new question
-                    currentQuestion = new Question();
-                    currentQuestion.Text = line;
-                    options = new List<string>();
-                    correctAnswers = new List<string>();
+                    string line = lines[i].Trim();
+                    
+                    // Pomijamy puste linie
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+                    
+                    // Jeśli to jest nowe pytanie (nie zaczyna się od '[')
+                    if (!line.StartsWith("["))
+                    {
+                        // Jeśli mieliśmy już pytanie, dodajemy je do listy
+                        if (currentQ != null)
+                        {
+                            currentQ.Questions = new List<string>(options);
+                            currentQ.CorrectAnswers = new List<string>(correctOptions);
+                            questions.Add(currentQ);
+                        }
+                        
+                        // Tworzymy nowe pytanie
+                        currentQ = new Question { Text = line };
+                        options = new List<string>();
+                        correctOptions = new List<string>();
+                    }
+                    // Jeśli to jest opcja odpowiedzi
+                    else if (line.StartsWith("[") && currentQ != null)
+                    {
+                        string option = line.Substring(line.IndexOf(']') + 1).Trim();
+                        options.Add(option);
+                        
+                        // Jeśli to poprawna odpowiedź
+                        if (line.StartsWith("[X]") || line.StartsWith("[x]"))
+                        {
+                            correctOptions.Add(option);
+                        }
+                    }
                 }
-                // Check if this is an answer option
-                else if (line.StartsWith("[") && currentQuestion != null)
+                
+                // Dodajemy ostatnie pytanie, jeśli istnieje
+                if (currentQ != null)
                 {
-                    string option = line.Substring(line.IndexOf(']') + 1).Trim();
-                    options.Add(option);
-
-                    // Check if this option is marked as correct
-                    if (line.StartsWith("[X]") || line.StartsWith("[x]"))
-                    {
-                        correctAnswers.Add(option);
-                    }
-
-                    // If this is the last option for the current question
-                    if (i == lines.Length - 1 || (!string.IsNullOrWhiteSpace(lines[i + 1]) && !lines[i + 1].Trim().StartsWith("[")))
-                    {
-                        // Finalize the current question
-                        currentQuestion.Questions = options;
-                        currentQuestion.CorrectAnswers = correctAnswers;
-                        quiz.Questions.Add(currentQuestion);
-                        currentQuestion = null;
-                    }
+                    currentQ.Questions = new List<string>(options);
+                    currentQ.CorrectAnswers = new List<string>(correctOptions);
+                    questions.Add(currentQ);
                 }
+                
+                // Tworzymy i ustawiamy obiekt Quiz
+                Models.Quiz quiz = new Models.Quiz(title, questions);
+                CurrentQuiz = quiz;
             }
-
-            CurrentQuiz = quiz;
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Błąd podczas ładowania pliku: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void InitializeAnswersForCurrentQuestion()
         {
             if (CurrentQuestion != null)
             {
+                // Clear previous answers
                 SelectedAnswers = new ObservableCollection<bool>(
                     Enumerable.Repeat(false, CurrentQuestion.Questions.Count));
+                    
+                // Create answer items - najpierw wyczyścimy kolekcję
+                if (CurrentVisibleAnswers == null)
+                {
+                    CurrentVisibleAnswers = new ObservableCollection<AnswerAdapter>();
+                }
+                else
+                {
+                    CurrentVisibleAnswers.Clear();
+                }
+                
+                // Dodaj odpowiedzi do kolekcji
+                foreach (var answer in CurrentQuestion.Questions)
+                {
+                    CurrentVisibleAnswers.Add(new AnswerAdapter(answer, false));
+                }
+                
+                // Aktualizuj UI
                 OnPropertyChanged(nameof(CurrentQuestion));
+                OnPropertyChanged(nameof(CurrentVisibleAnswers));
+                OnPropertyChanged(nameof(IsLastQuestion));
+                OnPropertyChanged(nameof(CanGoPrevious));
+                OnPropertyChanged(nameof(MultipleChoiceInfo));
+                
+                // Wymuś aktualizację komend
+                CommandManager.InvalidateRequerySuggested();
             }
         }
 
         private void NextQuestion()
         {
-            // Save current answers
-            if (CurrentQuestion != null && SelectedAnswers != null)
+            try
             {
-                List<bool> currentAnswers = SelectedAnswers.ToList();
-                _allUserAnswers.Add(currentAnswers);
-
-                // Calculate if answer is correct
-                List<string> selectedAnswerTexts = new List<string>();
-                for (int i = 0; i < CurrentQuestion.Questions.Count; i++)
+                // Save current answers
+                if (CurrentQuestion != null && CurrentVisibleAnswers != null)
                 {
-                    if (SelectedAnswers[i])
+                    List<bool> currentAnswers = CurrentVisibleAnswers.Select(a => a.IsSelected).ToList();
+                    
+                    // Update or add to the answers list
+                    if (CurrentQuestionIndex < _allUserAnswers.Count)
                     {
-                        selectedAnswerTexts.Add(CurrentQuestion.Questions[i]);
+                        _allUserAnswers[CurrentQuestionIndex] = currentAnswers;
+                    }
+                    else
+                    {
+                        _allUserAnswers.Add(currentAnswers);
+                    }
+
+                    // Calculate if answer is correct
+                    List<string> selectedAnswerTexts = new List<string>();
+                    for (int i = 0; i < CurrentVisibleAnswers.Count; i++)
+                    {
+                        if (CurrentVisibleAnswers[i].IsSelected)
+                        {
+                            selectedAnswerTexts.Add(CurrentQuestion.Questions[i]);
+                        }
+                    }
+
+                    bool isCorrect = CurrentQuestion.IsAnswerCorrect(selectedAnswerTexts);
+                    if (isCorrect)
+                    {
+                        CorrectAnswersCount++;
                     }
                 }
 
-                bool isCorrect = CurrentQuestion.IsAnswerCorrect(selectedAnswerTexts);
-                if (isCorrect)
+                StopTimer();
+
+                // Move to next question or finish quiz
+                if (CurrentQuestionIndex < TotalQuestions - 1)
                 {
-                    CorrectAnswersCount++;
+                    int nextIndex = CurrentQuestionIndex + 1;
+                    
+                    // Set the next index
+                    CurrentQuestionIndex = nextIndex;
+                    
+                    // Initialize answers for the new question
+                    InitializeAnswersForCurrentQuestion();
+                    
+                    // Start the timer
+                    StartTimer();
                 }
+                else
+                {
+                    FinishQuiz();
+                }
+                
+                // Force command evaluation
+                CommandManager.InvalidateRequerySuggested();
             }
-
-            StopTimer();
-
-            // Move to next question or finish quiz
-            if (CurrentQuestionIndex < TotalQuestions - 1)
+            catch (Exception ex)
             {
-                CurrentQuestionIndex++;
-                InitializeAnswersForCurrentQuestion();
-                StartTimer();
-            }
-            else
-            {
-                FinishQuiz();
+                MessageBox.Show($"Błąd podczas przechodzenia do następnego pytania: {ex.Message}", "Błąd", 
+                               MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -424,6 +551,31 @@ namespace Quiz.ViewModels
                 StartTimer();
             }
         }
+
+        private void PreviousQuestion()
+        {
+            if (CurrentQuestionIndex > 0)
+            {
+                StopTimer();
+                CurrentQuestionIndex--;
+                InitializeAnswersForCurrentQuestion();
+                
+                // Restore previous answers if available
+                if (_allUserAnswers.Count > CurrentQuestionIndex)
+                {
+                    var previousAnswers = _allUserAnswers[CurrentQuestionIndex];
+                    for (int i = 0; i < previousAnswers.Count && i < CurrentVisibleAnswers.Count; i++)
+                    {
+                        CurrentVisibleAnswers[i].IsSelected = previousAnswers[i];
+                    }
+                }
+                
+                StartTimer();
+                
+                OnPropertyChanged(nameof(IsLastQuestion));
+                OnPropertyChanged(nameof(CanGoPrevious));
+            }
+        }
     }
 
     public class QuestionResultViewModel : ViewModelBase
@@ -432,5 +584,38 @@ namespace Quiz.ViewModels
         public List<string> UserAnswers { get; set; }
         public List<string> CorrectAnswers { get; set; }
         public bool IsCorrect { get; set; }
+    }
+
+    // Adapter class for answers
+    public class AnswerAdapter : ViewModelBase
+    {
+        private string _text;
+        private bool _isSelected;
+        
+        public string Text
+        {
+            get { return _text; }
+            set
+            {
+                _text = value;
+                OnPropertyChanged(nameof(Text));
+            }
+        }
+        
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set
+            {
+                _isSelected = value;
+                OnPropertyChanged(nameof(IsSelected));
+            }
+        }
+        
+        public AnswerAdapter(string text, bool isSelected = false)
+        {
+            Text = text;
+            IsSelected = isSelected;
+        }
     }
 }
