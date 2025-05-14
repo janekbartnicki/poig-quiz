@@ -1,14 +1,11 @@
-﻿using Quiz.Stores;
+﻿using System;
+using System.Windows.Input;
+using Quiz.Stores;
 using Quiz.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Quiz.Commands
 {
-    class NavigateHomeCommand : CommandBase
+    public class NavigateHomeCommand : ICommand
     {
         private readonly NavigationStore _navigationStore;
 
@@ -17,7 +14,11 @@ namespace Quiz.Commands
             _navigationStore = navigationStore;
         }
 
-        public override void Execute(object parameter)
+        public event EventHandler CanExecuteChanged;
+
+        public bool CanExecute(object parameter) => true;
+
+        public void Execute(object parameter)
         {
             _navigationStore.CurrentViewModel = new HomeViewModel(_navigationStore);
         }

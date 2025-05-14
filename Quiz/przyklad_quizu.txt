@@ -1,0 +1,24 @@
+Quiz o programowaniu w C#
+Jaka jest najpopularniejsza platforma do tworzenia aplikacji w C#?
+[X] .NET
+[ ] Java
+[ ] Python
+[ ] Ruby
+
+Co to jest LINQ w C#?
+[X] Zestaw metod i operatorów do zapytań w kolekcjach
+[ ] Biblioteka do połączeń z bazą danych
+[ ] Typ strukturalny
+[ ] Interfejs graficzny
+
+Który z poniższych nie jest typem wartościowym w C#?
+[ ] int
+[ ] float
+[ ] bool
+[X] string
+
+Jakie operatory są używane w instrukcji null-conditional w C#?
+[ ] ??
+[X] ?.
+[ ] ||
+[ ] && 

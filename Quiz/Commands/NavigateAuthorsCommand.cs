@@ -1,10 +1,5 @@
 ﻿using Quiz.Stores;
 using Quiz.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Quiz.Commands
 {
@@ -19,7 +14,7 @@ namespace Quiz.Commands
 
         public override void Execute(object parameter)
         {
-            _navigationStore.CurrentViewModel = new AuthorsViewModel();
+            _navigationStore.CurrentViewModel = new AuthorsViewModel(_navigationStore);
         }
     }
 }
