@@ -13,6 +13,7 @@ using Microsoft.Win32;
 using Quiz.Commands;
 using Quiz.Models;
 using Quiz.ViewModels;
+using Quiz.Stores;
 
 namespace Quiz.ViewModels
 {
@@ -188,14 +189,26 @@ namespace Quiz.ViewModels
         public ICommand PreviousQuestionCommand { get; }
         public ICommand FinishQuizCommand { get; }
         public ICommand RestartQuizCommand { get; }
+        public ICommand ReturnToMainMenuCommand { get; }
 
-        public QuizViewModel()
+        public QuizViewModel(NavigationStore navigationStore = null)
         {
             LoadQuizCommand = new RelayCommand(_ => LoadQuiz());
             NextQuestionCommand = new RelayCommand(_ => NextQuestion(), CanGoToNextQuestion);
             PreviousQuestionCommand = new RelayCommand(_ => PreviousQuestion(), _ => CanGoPrevious);
             FinishQuizCommand = new RelayCommand(_ => FinishQuiz(), _ => IsQuizLoaded && !IsQuizFinished);
             RestartQuizCommand = new RelayCommand(_ => RestartQuiz());
+            
+            // Jeśli mamy dostęp do NavigationStore, użyj go do nawigacji
+            if (navigationStore != null)
+            {
+                ReturnToMainMenuCommand = new NavigateHomeCommand(navigationStore);
+            }
+            else
+            {
+                // Fallback dla kompatybilności z istniejącym kodem
+                ReturnToMainMenuCommand = new RelayCommand(_ => ReturnToMainMenu());
+            }
 
             InitializeTimer();
         }
@@ -577,6 +590,26 @@ namespace Quiz.ViewModels
                 OnPropertyChanged(nameof(IsLastQuestion));
                 OnPropertyChanged(nameof(CanGoPrevious));
             }
+        }
+
+        private void ReturnToMainMenu()
+        {
+            // Resetowanie stanu quizu
+            CurrentQuiz = null;
+            CurrentQuestionIndex = 0;
+            _allUserAnswers.Clear();
+            QuizResults.Clear();
+            CorrectAnswersCount = 0;
+            IsQuizLoaded = false;
+            IsQuizFinished = false;
+            
+            // Zatrzymanie timera jeśli jest aktywny
+            StopTimer();
+            
+            // Powiadomienie UI o zmianach
+            OnPropertyChanged(nameof(IsQuizLoaded));
+            OnPropertyChanged(nameof(IsQuizFinished));
+            OnPropertyChanged(nameof(CurrentQuiz));
         }
     }
 

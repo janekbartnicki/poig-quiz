@@ -66,10 +66,14 @@
             <!-- Ekran powitalny -->
             <StackPanel Visibility="{Binding IsQuizLoaded, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                         VerticalAlignment="Center">
+                <TextBlock Text="Menu główne" 
+                           FontSize="32" FontWeight="Bold" 
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,30"/>
                 <TextBlock Text="Witaj w aplikacji Quiz!" 
                            FontSize="24" FontWeight="Bold" 
                            HorizontalAlignment="Center"/>
-                <TextBlock Text="Aby rozpocząć, kliknij przycisk 'Wczytaj Quiz' i wybierz plik .json z quizem." 
+                <TextBlock Text="Aby rozpocząć, kliknij przycisk 'Wczytaj Quiz' i wybierz plik .json lub .txt z quizem." 
                            FontSize="16" TextWrapping="Wrap" 
                            HorizontalAlignment="Center" 
                            Margin="0,20"/>
@@ -110,8 +114,8 @@
             <!-- Wyniki -->
             <ScrollViewer Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel>
-                    <TextBlock Text="Wyniki" 
-                               FontSize="24" FontWeight="Bold" 
+                    <TextBlock Text="Wyniki quizu" 
+                               FontSize="28" FontWeight="Bold" 
                                HorizontalAlignment="Center" 
                                Margin="0,0,0,20"/>
 
@@ -175,6 +179,8 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -204,13 +210,28 @@
                 </Button.Style>
             </Button>
 
-            <!-- Przycisk do rozpoczęcia od nowa (widoczny po zakończeniu quizu) -->
-            <Button Content="Rozpocznij ponownie" 
-                    Command="{Binding RestartQuizCommand}" 
+            <!-- Przycisk powrotu do menu głównego (widoczny po zakończeniu quizu) -->
+            <Button Command="{Binding ReturnToMainMenuCommand}" 
                     Grid.Column="3"
+                    Padding="15,5" Margin="0,0,10,0"
+                    Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🏠" FontSize="14" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Powrót do menu" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Przycisk do rozpoczęcia od nowa (widoczny po zakończeniu quizu) -->
+            <Button Command="{Binding RestartQuizCommand}" 
+                    Grid.Column="4"
                     HorizontalAlignment="Right"
                     Padding="15,5" 
-                    Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    Visibility="{Binding IsQuizFinished, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🔄" FontSize="14" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Rozpocznij ponownie" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
         </Grid>
     </Grid>
 </UserControl>
