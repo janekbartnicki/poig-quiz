@@ -1,5 +1,4 @@
-﻿using Quiz.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,21 +16,13 @@ using System.Windows.Shapes;
 namespace Quiz.Views
 {
     /// <summary>
-    /// Logika interakcji dla klasy QuizGeneratorView.xaml
+    /// Logika interakcji dla klasy QuizEditorView.xaml
     /// </summary>
-    public partial class QuizGeneratorView : UserControl
+    public partial class QuizEditorView : UserControl
     {
-        public QuizGeneratorView()
+        public QuizEditorView()
         {
             InitializeComponent();
-        }
-
-        private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (DataContext is QuizGeneratorViewModel viewModel && viewModel.EditQuizCommand.CanExecute(null))
-            {
-                viewModel.EditQuizCommand.Execute(null);
-            }
         }
     }
 }
